@@ -12,13 +12,7 @@ repositories {
 
 dependencies {
     testImplementation 'com.codeborne:selenide:6.17.0'
-
-    testImplementation 'io.cucumber:cucumber-java:7.14.0'
-    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.14.0'
-
-
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
 }
 
 test {

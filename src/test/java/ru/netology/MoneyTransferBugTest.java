@@ -10,34 +10,47 @@ import ru.netology.page.LoginPage;
 import static com.codeborne.selenide.Selenide.open;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+
 public class MoneyTransferBugTest {
+
+    private LoginPage loginPage;
 
     @BeforeEach
     void setup() {
         open("http://localhost:9999");
+        loginPage = new LoginPage();
     }
 
     @Test
     @DisplayName("Нельзя перевести сумму больше остатка")
     void shouldNotAllowTransferMoreThanBalance() {
-        val loginPage = new LoginPage();
         val authInfo = DataHelper.getAuthInfo();
         val verificationPage = loginPage.validLogin(authInfo);
-        val verifyCode = DataHelper.getVerificationCodeFor(authInfo);
-        val dashboard = verificationPage.validVerify(verifyCode);
+        val verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+        val dashboardPage = verificationPage.validVerify(verificationCode);
+        val firstCardInfo = DataHelper.getFirstCard();
+        val secondCardInfo = DataHelper.getSecondCard();
 
-        val firstCard = DataHelper.getFirstCard();
-        val secondCard = DataHelper.getSecondCard();
+        if (firstCardInfo == null || secondCardInfo == null) {
+            throw new IllegalStateException("Card information should not be null");
+        }
+        int firstCardBalance = dashboardPage.getCardBalance(DataHelper.getMaskedNumber(firstCardInfo));
+        int secondCardBalance = dashboardPage.getCardBalance(DataHelper.getMaskedNumber(secondCardInfo));
+        int amountToTransfer = secondCardBalance + 1;
+        val transferPage = dashboardPage.selectCard(firstCardInfo);
+        int preTransferFirstBalance = firstCardBalance;
+        int preTransferSecondBalance = secondCardBalance;
 
-        int balance1 = dashboard.getCardBalance(firstCard.getMasked());
-        int balance2 = dashboard.getCardBalance(secondCard.getMasked());
+        val dashboardPageAfter = transferPage != null ? transferPage.validTransfer(amountToTransfer, secondCardInfo) : null;
 
-        int amount = balance2 + 1;
+        if (dashboardPageAfter == null) {
+            throw new IllegalStateException("Dashboard page after transfer is null; UI state may be broken.");
+        }
 
-        val transferPage = dashboard.selectCard(firstCard);
-        val dashboardAfter = transferPage.validTransfer(amount, secondCard);
+        int actualFirstBalance = dashboardPageAfter.getCardBalance(DataHelper.getMaskedNumber(firstCardInfo));
+        int actualSecondBalance = dashboardPageAfter.getCardBalance(DataHelper.getMaskedNumber(secondCardInfo));
 
-        assertEquals(balance1, dashboardAfter.getCardBalance(firstCard.getMasked()));
-        assertEquals(balance2, dashboardAfter.getCardBalance(secondCard.getMasked()));
+        assertEquals(preTransferFirstBalance, actualFirstBalance, "Balance of the source card should not change on failed transfer");
+        assertEquals(preTransferSecondBalance, actualSecondBalance, "Balance of the destination card should not change on failed transfer");
     }
 }

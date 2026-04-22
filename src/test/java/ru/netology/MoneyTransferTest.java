@@ -20,22 +20,35 @@ public class MoneyTransferTest {
     void shouldTransferMoney() {
         val loginPage = new LoginPage();
         val authInfo = DataHelper.getAuthInfo();
+
+
         val verificationPage = loginPage.validLogin(authInfo);
-        val code = DataHelper.getVerificationCodeFor(authInfo);
-        val dashboard = verificationPage.validVerify(code);
+        val verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+        val dashboardPage = verificationPage.validVerify(verificationCode);
 
-        val firstCard = DataHelper.getFirstCard();
-        val secondCard = DataHelper.getSecondCard();
 
-        int balance1 = dashboard.getCardBalance(firstCard.getMasked());
-        int balance2 = dashboard.getCardBalance(secondCard.getMasked());
+        val firstCardInfo = DataHelper.getFirstCard();
+        val secondCardInfo = DataHelper.getSecondCard();
 
-        int amount = balance2 / 2;
 
-        val transferPage = dashboard.selectCard(firstCard);
-        val dashboardAfter = transferPage.validTransfer(amount, secondCard);
+        int firstCardBalance = dashboardPage.getCardBalance(DataHelper.getMaskedNumber(firstCardInfo));
+        int secondCardBalance = dashboardPage.getCardBalance(DataHelper.getMaskedNumber(secondCardInfo));
 
-        assertEquals(balance1 + amount, dashboardAfter.getCardBalance(firstCard.getMasked()));
-        assertEquals(balance2 - amount, dashboardAfter.getCardBalance(secondCard.getMasked()));
+
+        int amount = secondCardBalance / 2;
+
+
+        val transferPage = dashboardPage.selectCard(firstCardInfo);
+        int expectedBalanceFirstCard = firstCardBalance + amount;
+        int expectedBalanceSecondCard = secondCardBalance - amount;
+
+        val dashboardPageAfter = transferPage.validTransfer(amount, secondCardInfo);
+
+
+        int actualBalanceFirstCard = dashboardPageAfter.getCardBalance(DataHelper.getMaskedNumber(firstCardInfo));
+        int actualBalanceSecondCard = dashboardPageAfter.getCardBalance(DataHelper.getMaskedNumber(secondCardInfo));
+
+        assertEquals(expectedBalanceFirstCard, actualBalanceFirstCard, "First card balance should reflect the transfer amount added");
+        assertEquals(expectedBalanceSecondCard, actualBalanceSecondCard, "Second card balance should reflect the transfer amount deducted");
     }
 }

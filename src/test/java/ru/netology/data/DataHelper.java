@@ -14,6 +14,7 @@ public class DataHelper {
     }
 
     public static AuthInfo getAuthInfo() {
+        // Centralize test credentials in one place
         return new AuthInfo("vasya", "qwerty123");
     }
 
@@ -23,24 +24,13 @@ public class DataHelper {
     }
 
     public static VerificationCode getVerificationCodeFor(AuthInfo info) {
+
         return new VerificationCode("12345");
     }
 
     @Value
     public static class CardInfo {
         String number;
-
-        public String getNumberWithoutSpaces() {
-            return number.replaceAll("\\s+", "");
-        }
-
-        public String getMasked() {
-            String n = getNumberWithoutSpaces();
-            if (n.length() != 16) {
-                return number;
-            }
-            return "**** **** **** " + n.substring(12);
-        }
     }
 
     public static CardInfo getFirstCard() {
@@ -49,5 +39,24 @@ public class DataHelper {
 
     public static CardInfo getSecondCard() {
         return new CardInfo("5559 0000 0000 0002");
+    }
+
+    public static String getCardNumberWithoutSpaces(CardInfo card) {
+        if (card == null || card.getNumber() == null) {
+            return null;
+        }
+        return card.getNumber().replaceAll("\\s+", "");
+    }
+
+    public static String getMaskedNumber(CardInfo card) {
+        String n = getCardNumberWithoutSpaces(card);
+        if (n == null) {
+            return null;
+        }
+        if (n.length() != 16) {
+
+            return card.getNumber();
+        }
+        return "**** **** **** " + n.substring(12);
     }
 }

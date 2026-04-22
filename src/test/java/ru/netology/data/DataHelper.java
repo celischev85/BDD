@@ -30,12 +30,16 @@ public class DataHelper {
     public static class CardInfo {
         String number;
 
-        public String getId() {
-            return number.substring(number.length() - 4);
-        }
-
         public String getNumberWithoutSpaces() {
             return number.replaceAll("\\s+", "");
+        }
+
+        public String getMasked() {
+            String n = getNumberWithoutSpaces();
+            if (n.length() != 16) {
+                return number;
+            }
+            return "**** **** **** " + n.substring(12);
         }
     }
 

@@ -27,21 +27,15 @@ public class MoneyTransferTest {
         val firstCard = DataHelper.getFirstCard();
         val secondCard = DataHelper.getSecondCard();
 
-        int balance1 = dashboard.getCardBalance(firstCard);
-        int balance2 = dashboard.getCardBalance(secondCard);
+        int balance1 = dashboard.getCardBalance(firstCard.getMasked());
+        int balance2 = dashboard.getCardBalance(secondCard.getMasked());
 
         int amount = balance2 / 2;
 
         val transferPage = dashboard.selectCard(firstCard);
+        val dashboardAfter = transferPage.validTransfer(amount, secondCard);
 
-        val dashboardAfter = transferPage.validTransfer(
-                amount,
-                secondCard.getNumber().replaceAll("\\s+", "")
-        );
-
-        assertEquals(balance1 + amount,
-                dashboardAfter.getCardBalance(firstCard));
-        assertEquals(balance2 - amount,
-                dashboardAfter.getCardBalance(secondCard));
+        assertEquals(balance1 + amount, dashboardAfter.getCardBalance(firstCard.getMasked()));
+        assertEquals(balance2 - amount, dashboardAfter.getCardBalance(secondCard.getMasked()));
     }
 }
